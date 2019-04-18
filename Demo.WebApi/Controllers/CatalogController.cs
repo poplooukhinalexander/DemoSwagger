@@ -17,12 +17,10 @@ namespace Demo.WebApi.Controllers
     public class CatalogController : ControllerBase
     {
         private CatalogContext Context { get; }
-        /// <summary>
-        /// Создает и идентифицирует объек типа <see cref="CatalogController"/>.
-        /// </summary>
-        public CatalogController()
+
+        public CatalogController(CatalogContext context)
         {
-            Context = new CatalogContext();
+            Context = context;
         }
 
         /// <summary>

@@ -1,3 +1,9 @@
 /Demo.WebApi/bin/Debug/netcoreapp2.1
 /Demo.WebApi/obj/Debug/netcoreapp2.1
 /Demo.WebApi/obj
+/.vs/Demo/v14/*.suo
+/.vs/Demo/v15/*.suo
+/.vs/Demo/v15/Server/sqlite3
+/.vs/config
+/*.user
+/Demo/Demo.WebApi
