@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Demo.WebApi</name>
+    </assembly>
+    <members>
+        <member name="T:Demo.WebApi.Controllers.CatalogController">
+            <summary>
+            Контроллер предоставлющий доступ к каталогу товаров.
+            </summary>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.#ctor">
+            <summary>
+            Создает и идентифицирует объек типа <see cref="T:Demo.WebApi.Controllers.CatalogController"/>.
+            </summary>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.GetVendors">
+            <summary>
+            Вовзращает список всех вендоров.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.GetVendor(System.Int64)">
+            <summary>
+            Вовзращает вендора по идентификатору.
+            </summary>
+            <param name="id">Идентификатор вендора.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.GetProducts(System.String,System.Decimal,System.Decimal,System.Int32,System.Int32)">
+            <summary>
+            Возврщает список товаров с пейджинацией.
+            </summary>
+            <param name="name">Фильтр по наименованию.</param>
+            <param name="minPrice">Фильтр по нижней границе стоимости.</param>
+            <param name="maxPrice">Фильтр по верхней границе стоимости.</param>
+            <param name="start">Стартовая позиция.</param>
+            <param name="count">Кол-во выбираемых товаров.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.GetProduct(System.Int64)">
+            <summary>
+            Возвращает товар по идентификатору
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.AddProduct(Demo.WebApi.Model.Product)">
+            <summary>
+            Добавялет товар.
+            </summary>
+            <param name="product">Новый товар</param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.DeleteProduct(System.Int64)">
+            <summary>
+            Удаляет товар по идентификатору
+            </summary>
+            <param name="id"></param>
+            <returns></returns>s
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.UpdateProduct(Demo.WebApi.Model.Product)">
+            <summary>
+            Обновляет инфу о товаре.
+            </summary>
+            <param name="product">Оновление инфы о товаре.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.GetPhotos(System.Int64)">
+            <summary>
+            Вовзращает коллекцию фото для товара.
+            </summary>
+            <param name="productId">Идентификатор товара.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.GetPhoto(System.Int64)">
+            <summary>
+            Возвращает фото по идентификатору.
+            </summary>
+            <param name="id">Идентификатор фото.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.AddPhoto(Demo.WebApi.Model.Photo)">
+            <summary>
+            Добавляет фото для товара.
+            </summary>
+            <param name="photo">Новое фото.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Demo.WebApi.Controllers.CatalogController.DeletePhoto(System.Int64)">
+            <summary>
+            Удаляет фото по идентификатору.
+            </summary>
+            <param name="id">Идентификатор фото.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Demo.WebApi.Model.IIdentity">
+            <summary>
+            Итнрфейс для идентифицируемых сущностей.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.IIdentity.Id">
+            <summary>
+            Идентификатор.
+            </summary>
+        </member>
+        <member name="T:Demo.WebApi.Model.Photo">
+            <summary>
+            Модель для фото.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Photo.Id">
+            <summary>
+            Иденнтификатор.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Photo.Description">
+            <summary>
+            Описание.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Photo.Content">
+            <summary>
+            Соержимое как набор байт.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Photo.Extension">
+            <summary>
+            Тип картинки (расширение файла).
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Photo.ProductId">
+            <summary>
+            Идентифкатор товара
+            </summary>
+        </member>
+        <member name="T:Demo.WebApi.Model.Product">
+            <summary>
+            Модель для товара.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Product.VendorId">
+            <summary>
+            Идентификатор вендора.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Product.Id">
+            <summary>
+            Идентификатор.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Product.Name">
+            <summary>
+            Наименование.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Product.Description">
+            <summary>
+            Описание.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Product.Price">
+            <summary>
+            Стоимость.
+            </summary>
+        </member>
+        <member name="T:Demo.WebApi.Model.Vendor">
+            <summary>
+            Модель для вендора.
+            </summary>    
+        </member>
+        <member name="P:Demo.WebApi.Model.Vendor.Id">
+            <summary>
+            Идентифкатор.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Vendor.Name">
+            <summary>
+            Наименование.
+            </summary>
+        </member>
+        <member name="P:Demo.WebApi.Model.Vendor.Logo">
+            <summary>
+            Ссылка на лого.
+            </summary>
+        </member>
+    </members>
+</doc>
