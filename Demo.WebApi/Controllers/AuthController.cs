@@ -36,7 +36,8 @@ namespace Demo.WebApi.Controllers
         /// <response code="200">OK.</response>
         /// <response code="400">Invalid username or password.</response>
         [HttpPost("/token")]
-        public ActionResult Token([FromBody] Account account)
+        [Consumes("application/x-www-form-urlencoded")]
+        public ActionResult Token([FromForm] Account account)
         {            
             var identity = GetIdentity(account.Username, account.Password);
             if (identity == null)

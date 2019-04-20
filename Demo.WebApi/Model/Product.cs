@@ -1,9 +1,11 @@
-﻿namespace Demo.WebApi.Model
+﻿using System.IO;
+
+namespace Demo.WebApi.Model
 {
     /// <summary>
     /// Модель для товара.
     /// </summary>
-    public class Product : IIdentity
+    public class Product : IIdentity, IValidatable
     {
         /// <summary>
         /// Идентификатор вендора.
@@ -30,5 +32,15 @@
         /// </summary>
         public decimal Price { get; set; }
 
+        /// <summary>
+        /// Валидация модели.
+        /// </summary>
+        public void Validate()
+        {
+            if (!string.IsNullOrWhiteSpace(Name))
+            {
+                throw  new InvalidDataException("'Name' cannot be empty.");
+            }
+        }
     }
 }

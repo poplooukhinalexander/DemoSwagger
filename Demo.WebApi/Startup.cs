@@ -1,20 +1,24 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using Demo.WebApi.Filters;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Demo.WebApi
 {
-    using Model;
+    using Filters;
+    using Model;    
 
     /// <summary>
     /// Точка входа в приложение.
@@ -52,6 +56,7 @@ namespace Demo.WebApi
                 c.IncludeXmlComments(xmlPath);
 
                 c.OperationFilter<ResponseContentTypeOperationFilter>();
+                c.OperationFilter<AuthOperationFilter>();
             });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -95,6 +100,16 @@ namespace Demo.WebApi
             });
 
             app.UseAuthentication();
+
+            app.UseExceptionHandler(c => c.Run(async ctx =>
+            {
+                var exceptionHandlerPathFeature = ctx.Features.Get<IExceptionHandlerPathFeature>();
+                var ex = exceptionHandlerPathFeature.Error;
+
+                var result = JsonConvert.SerializeObject(new { error = ex.Message });
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.WriteAsync(result);
+            }));
 
             app.UseMvc();
         }
