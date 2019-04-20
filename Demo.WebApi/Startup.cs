@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Demo.WebApi.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,17 +16,29 @@ namespace Demo.WebApi
 {
     using Model;
 
-
+    /// <summary>
+    /// Точка входа в приложение.
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Создаеи и инициализирует объект типа <see cref="Startup"/>.
+        /// </summary>
+        /// <param name="configuration"></param>
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        /// <summary>
+        /// Настройка приложения.
+        /// </summary>
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+       /// <summary>
+       /// Подключаем сервисы.
+       /// </summary>
+       /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<CatalogContext>(opts => opts.UseInMemoryDatabase("MyCatalog"));
@@ -37,6 +50,8 @@ namespace Demo.WebApi
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
+
+                c.OperationFilter<ResponseContentTypeOperationFilter>();
             });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -60,19 +75,20 @@ namespace Demo.WebApi
             services.AddMvc();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// Подключаем middlewares для обработки http-запроса.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="env"></param>
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }          
-
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
+        
             app.UseSwagger();
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-            // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");                

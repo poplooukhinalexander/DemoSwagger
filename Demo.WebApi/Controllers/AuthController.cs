@@ -33,6 +33,8 @@ namespace Demo.WebApi.Controllers
         /// Аутентификация.
         /// </summary>
         /// <returns></returns>
+        /// <response code="200">OK.</response>
+        /// <response code="400">Invalid username or password.</response>
         [HttpPost("/token")]
         public ActionResult Token([FromBody] Account account)
         {            

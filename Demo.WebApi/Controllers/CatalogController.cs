@@ -5,8 +5,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace Demo.WebApi.Controllers
-{    
+{   
+    using Filters;
     using Model;    
 
     /// <summary>
@@ -27,7 +29,8 @@ namespace Demo.WebApi.Controllers
         /// Вовзращает список всех вендоров.
         /// </summary>
         /// <returns></returns>
-        [HttpGet("vendors/all")]
+        [HttpGet("vendors/all")]          
+        [SwaggerResponseContentType("application/json", Exclusive = true)]
         public ActionResult<IEnumerable<Vendor>> GetVendors()
         {
             return Ok(Context.Vendors);
