@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.ComponentModel.DataAnnotations;
+using System.IO;
 
 namespace Demo.WebApi.Model
 {
@@ -20,6 +21,7 @@ namespace Demo.WebApi.Model
         /// <summary>
         /// Наименование.
         /// </summary>
+        [Required]
         public string Name { get; set; }
 
         /// <summary>

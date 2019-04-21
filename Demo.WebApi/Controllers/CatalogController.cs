@@ -104,7 +104,7 @@ namespace Demo.WebApi.Controllers
         [Authorize(Roles = "admin")]
         [MapToApiVersion("2.0")]
         [SwaggerResponse(201, Type = typeof(Vendor), Description = "Вендор был добавлен")]
-        public ActionResult UpdateVendor([FromBody] Vendor vendor)
+        public ActionResult UpdateVendor([FromForm] Vendor vendor)
         {
             if (!Context.Vendors.Any(v => v.Id == vendor.Id))
                 return NotFound();
