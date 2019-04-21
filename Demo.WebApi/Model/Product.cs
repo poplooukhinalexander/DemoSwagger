@@ -37,9 +37,9 @@ namespace Demo.WebApi.Model
         /// </summary>
         public void Validate()
         {
-            if (!string.IsNullOrWhiteSpace(Name))
+            if (string.IsNullOrWhiteSpace(Name))
             {
-                throw  new InvalidDataException("'Name' cannot be empty.");
+                throw  new InvalidDataException($"'{nameof(Name)}' cannot be empty.");
             }
         }
     }

@@ -1,9 +1,11 @@
-﻿namespace Demo.WebApi.Model
+﻿using System.IO;
+
+namespace Demo.WebApi.Model
 {
     /// <summary>
     /// Модель для вендора.
     /// </summary>    
-    public class Vendor : IIdentity
+    public class Vendor : IIdentity, IValidatable
     {
         /// <summary>
         /// Идентифкатор.
@@ -18,6 +20,48 @@
         /// <summary>
         /// Ссылка на лого.
         /// </summary>
-        public string Logo { get; set; }        
+        public string Logo { get; set; }
+
+        /// <summary>
+        /// Тип партнерства.        
+        /// </summary>
+        public PartnerType Partner { get; set; } = PartnerType.Default;
+
+        /// <summary>
+        /// Валидирует модель.
+        /// </summary>
+        public void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                throw new InvalidDataException($"'{nameof(Name)}' cannot be empty.");
+            }
+        }
+
+        /// <summary>
+        /// Тип партнерства.
+        /// </summary>
+        public enum PartnerType
+        {
+            /// <summary>
+            /// Обычный партнер.
+            /// </summary>
+            Default,
+
+            /// <summary>
+            /// Серебряный патнер.
+            /// </summary>
+            Silver,
+
+            /// <summary>
+            /// Золотой партнер.
+            /// </summary>
+            Golden,
+
+            /// <summary>
+            /// Платиновый партнер.
+            /// </summary>
+            Platinum
+        }
     }
 }

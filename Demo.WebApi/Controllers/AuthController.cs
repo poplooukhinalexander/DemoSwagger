@@ -18,12 +18,18 @@ namespace Demo.WebApi.Controllers
     /// <summary>
     /// Контроллер для аутентификации.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private CatalogContext Context { get; }
 
+        /// <summary>
+        /// Создает и инициализирует объекти типа <see cref="AuthController"/>.
+        /// </summary>
+        /// <param name="context"></param>
         public AuthController(CatalogContext context)
         {
             Context = context;

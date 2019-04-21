@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,21 +8,23 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-
+using Newtonsoft.Json.Converters;
 using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Demo.WebApi
 {
-    using Filters;
-    using Model;    
+    using Filters;  
+    using Model;        
 
     /// <summary>
-    /// Точка входа в приложение.
+    /// Инициализация приложения.
     /// </summary>
     public class Startup
     {
@@ -49,7 +52,8 @@ namespace Demo.WebApi
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Swagger Demo Web API", Version = "v1" });
+                c.SwaggerDoc("v1.0", new Info { Title = "Swagger Demo Web API", Version = "v1.0" });
+                c.SwaggerDoc("v2.0", new Info { Title = "Swagger Demo Web API", Version = "v2.0" });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -57,6 +61,27 @@ namespace Demo.WebApi
 
                 c.OperationFilter<ResponseContentTypeOperationFilter>();
                 c.OperationFilter<AuthOperationFilter>();
+                c.OperationFilter<RemoveVersionParameterFilter>();
+                c.DocumentFilter<UseVersionValueFilter>();
+
+                c.DocInclusionPredicate((version, desc) =>
+                {
+                    if (!desc.TryGetMethodInfo(out MethodInfo methodInfo)) return false;
+
+                    var versions = methodInfo.DeclaringType
+                        .GetCustomAttributes(true)
+                        .OfType<ApiVersionAttribute>()
+                        .SelectMany(attr => attr.Versions);
+
+                    var maps = methodInfo.GetCustomAttributes(true)
+                        .OfType<MapToApiVersionAttribute>()
+                        .SelectMany(map => map.Versions)
+                        .ToArray();
+
+                    var res = versions.Any(v => $"v{v.ToString()}" == version) 
+                        && (maps.Length == 0 || maps.Any(v => $"v{v.ToString()}" == version));
+                    return res;
+                });
             });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -77,7 +102,13 @@ namespace Demo.WebApi
                     };
                 });
 
-            services.AddMvc();
+            services.AddApiVersioning(opts =>
+            {
+                opts.AssumeDefaultVersionWhenUnspecified = true;
+                opts.DefaultApiVersion = new ApiVersion(1, 0);
+            });
+
+            services.AddMvc().AddJsonOptions(opts => opts.SerializerSettings.Converters.Add(new StringEnumConverter()));
         }
 
         /// <summary>
@@ -96,7 +127,8 @@ namespace Demo.WebApi
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");                
+                c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "v1.0");
+                c.SwaggerEndpoint("/swagger/v2.0/swagger.json", "v2.0");
             });
 
             app.UseAuthentication();

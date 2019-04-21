@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,15 +9,17 @@ using Swashbuckle.AspNetCore.Annotations;
 
 
 namespace Demo.WebApi.Controllers
-{   
+{
     using Filters;
-    using Model;    
+    using Model;
 
     /// <summary>
     /// Контроллер предоставлющий доступ к каталогу товаров.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     public class CatalogController : ControllerBase
     {
         private CatalogContext Context { get; }
@@ -51,7 +52,7 @@ namespace Demo.WebApi.Controllers
         /// <param name="id">Идентификатор вендора.</param>
         /// <returns></returns>
         /// <response code="200">OK.</response>
-        /// <response code="404">Not Found.</response>
+        /// <response code="404">Вендор не найден.</response>
         [HttpGet("vendors/{id}")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]        
         [AllowAnonymous]
@@ -62,7 +63,84 @@ namespace Demo.WebApi.Controllers
                 return NotFound();
 
             return Ok(vendor);
-        }        
+        }
+
+        /// <summary>
+        /// Добавляет нового вендора.
+        /// </summary>
+        /// <param name="vendor"></param>
+        /// <returns></returns>
+        /// <response code="400">Невалидная модель для вендора.</response>
+        /// <response code="409">Вендор уже существует.</response>
+        [HttpPost("vendors")]
+        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Authorize(Roles = "admin")]
+        [MapToApiVersion("2.0")]
+        [SwaggerResponse(201, Type = typeof(Vendor), Description = "Вендор был добавлен")]
+        public ActionResult AddVendor([FromForm] Vendor vendor)
+        {
+            if (Context.Vendors.Any(v => v.Name.ToLower() == vendor.Name.ToLower()))
+                return Conflict($"Vendor with name {vendor.Name} always exists.");
+
+            vendor.Validate();
+
+            vendor.Id = GetLastId(Context.Vendors);
+            Context.Vendors.Add(vendor);
+            Context.SaveChanges();
+            return Created($"/api/vendors/{vendor.Id}", vendor);
+        }
+
+        /// <summary>
+        /// Добавляет нового вендора.
+        /// </summary>
+        /// <param name="vendor"></param>
+        /// <returns></returns>
+        /// <response code="200">Вендор обновлен.</response>
+        /// <response code="400">Невалидная модель для вендора.</response>
+        /// <response code="404">Вендор не найден.</response>
+        /// <response code="409">Вендор уже существует.</response>
+        [HttpPut("vendors")]
+        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Authorize(Roles = "admin")]
+        [MapToApiVersion("2.0")]
+        [SwaggerResponse(201, Type = typeof(Vendor), Description = "Вендор был добавлен")]
+        public ActionResult UpdateVendor([FromBody] Vendor vendor)
+        {
+            if (!Context.Vendors.Any(v => v.Id == vendor.Id))
+                return NotFound();
+            if (Context.Vendors.Any(v => v.Id != vendor.Id && v.Name.ToLower() == vendor.Name.ToLower()))
+                return Conflict($"Vendor with name {vendor.Name} always exists.");
+
+            vendor.Validate();
+
+            vendor.Id = GetLastId(Context.Vendors);
+            Context.Vendors.Update(vendor);
+            Context.SaveChanges();
+            return Ok(vendor);
+        }
+
+        /// <summary>
+        /// Удаляет вендора по идентификатору
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <response code="200">Вендор удален</response>
+        /// <response code="404">Вендор не найден.</response>
+        [HttpDelete("vendors/{id}")]
+        [Authorize(Roles = "admin")]
+        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [MapToApiVersion("2.0")]
+        public ActionResult DeleteVendor(long id)
+        {
+            var vendor = Context.Vendors.FirstOrDefault(v => v.Id == id);
+            if (vendor == null)
+                return NotFound($"Vendor with Id {id} not found.");
+
+            Context.Vendors.Remove(vendor);
+            Context.SaveChanges();
+
+            return Ok();
+        }
 
         /// <summary>
         /// Возврщает список товаров с пейджинацией.
@@ -106,7 +184,7 @@ namespace Demo.WebApi.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         /// <response code="200">OK.</response>
-        /// <response code="404">Not Found.</response>
+        /// <response code="404">Товар не найден.</response>
         [HttpGet("products/{id}")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]
         [AllowAnonymous]
@@ -123,9 +201,9 @@ namespace Demo.WebApi.Controllers
         /// </summary>
         /// <param name="product">Новый товар</param>
         /// <returns></returns>
-        /// <response code="400">Invalid model for Product.</response>
-        /// <response code="404">Vendor not found.</response>
-        /// <response code="409">Product with same name always exists.</response>       
+        /// <response code="400">Невалидная модель для товара.</response>
+        /// <response code="404">Вендор не найден.</response>
+        /// <response code="409">Товар уже существует.</response>       
         [HttpPost("products")]
         [SwaggerResponse(201, Type = typeof(Product), Description = "Product was added")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]
@@ -153,8 +231,8 @@ namespace Demo.WebApi.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        /// <response code="200">OK. Was Deleted.</response>
-        /// <response code="404">Not Found.</response>
+        /// <response code="200">Товар удален</response>
+        /// <response code="404">Товар не найден.</response>
         [HttpDelete("products/{id}")]
         [Authorize(Roles = "admin")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]
@@ -175,9 +253,10 @@ namespace Demo.WebApi.Controllers
         /// </summary>
         /// <param name="product">Оновление инфы о товаре.</param>
         /// <returns></returns>
-        /// <response code="200">OK. Was Updated.</response>
-        /// <response code="400">Invalid Model for Product.</response>
-        /// <response code="404">Not Found.</response>        
+        /// <response code="200">Товар обновлен.</response>
+        /// <response code="400">Невалидная модель для товара.</response>
+        /// <response code="404">Товар не найден.</response>
+        /// <response code="409">Товар уже существует.</response> 
         [HttpPut("products/{id}")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]
         [Authorize(Roles = "admin")]
@@ -186,14 +265,19 @@ namespace Demo.WebApi.Controllers
             if (!Context.Products.Any(p => p.Id == product.Id))
                 return NotFound($"Product with Id {product.Id} not found.");
 
+            if (Context.Products.Any(p => p.Id != product.Id && p.Name.ToLower() == product.Name.ToLower()))
+                return Conflict($"The product with name {product.Name} always exists.");
+
+            product.Validate();
+
             Context.Products.Update(product);
             Context.SaveChanges();
 
-            return Ok();
+            return Ok(product);
         } 
 
         /// <summary>
-        /// Вовзращает коллекцию фото для товара.
+        /// Возвращает коллекцию фото для товара.
         /// </summary>
         /// <param name="productId">Идентификатор товара.</param>
         /// <returns></returns>
@@ -212,7 +296,7 @@ namespace Demo.WebApi.Controllers
         /// <param name="id">Идентификатор фото.</param>
         /// <returns></returns>
         /// <response code="200">OK.</response>
-        /// <response code="404">Not Found.</response>
+        /// <response code="404">Фото не найдено.</response>
         [HttpGet("photo/{id}")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]
         public ActionResult<Photo> GetPhoto(long id)
@@ -229,7 +313,7 @@ namespace Demo.WebApi.Controllers
         /// </summary>
         /// <param name="photo">Новое фото.</param>
         /// <returns></returns>
-        /// <response code="404">Product not found.</response>
+        /// <response code="404">Товар не найден.</response>
         [HttpPost("photo")]
         [Authorize(Roles="admin")]
         [SwaggerResponse(201, Type = typeof(Photo), Description = "Photo was uploaded.")]
@@ -262,7 +346,7 @@ namespace Demo.WebApi.Controllers
         {
             var photo = Context.Photos.FirstOrDefault(p => p.Id == id);
             if (photo == null)
-                return NotFound($"Photo with Id {id} noot found.");
+                return NotFound($"Photo with Id {id} not found.");
 
             Context.Photos.Remove(photo);
             Context.SaveChanges();

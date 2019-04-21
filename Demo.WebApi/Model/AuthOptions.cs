@@ -3,13 +3,35 @@ using System.Text;
 
 namespace Demo.WebApi.Model
 {
+    /// <summary>
+    /// Опции для аутентификации.
+    /// </summary>
     public class AuthOptions
     {
-        public const string ISSUER = "MyAuthServer"; // издатель токена
-        public const string AUDIENCE = "Demo Web API/"; // потребитель токена
-        const string KEY = "mysupersecret_secretkey!123";   // ключ для шифрации
-        public const int LIFETIME = 20; // время жизни токена
+        /// <summary>
+        /// Издатель.
+        /// </summary>
+        public const string ISSUER = "MyAuthServer";
 
+        /// <summary>
+        /// Потребитель токена.
+        /// </summary>
+        public const string AUDIENCE = "Demo Web API/";
+
+        /// <summary>
+        /// Соль для ключа шифрования.
+        /// </summary>
+        const string KEY = "mysupersecret_secretkey!123";
+
+        /// <summary>
+        /// Время жизни окена в минутах.
+        /// </summary>
+        public const int LIFETIME = 20;
+
+        /// <summary>
+        /// Возвращает симметричный ключ.
+        /// </summary>
+        /// <returns></returns>
         public static SymmetricSecurityKey GetSymmetricSecurityKey()
         {
             return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(KEY));
