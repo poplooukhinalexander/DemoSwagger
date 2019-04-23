@@ -7,3 +7,4 @@
 /.vs/config
 /*.user
 /Demo/Demo.WebApi
+/.vs/Demo/DesignTimeBuild/*.dtbcache

@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -40,21 +43,23 @@ namespace Demo.WebApi.Controllers
         /// <response code="200">OK.</response>
         [HttpGet("vendors/all")]          
         [AllowAnonymous]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]        
+        [Produces("application/json")]
         public ActionResult<IEnumerable<Vendor>> GetVendors()
-        {
+        {          
             return Ok(Context.Vendors);
         }
 
         /// <summary>
-        /// Вовзращает вендора по идентификатору.
+        /// Возвращает вендора по идентификатору.
         /// </summary>
         /// <param name="id">Идентификатор вендора.</param>
         /// <returns></returns>
         /// <response code="200">OK.</response>
         /// <response code="404">Вендор не найден.</response>
         [HttpGet("vendors/{id}")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]        
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(Vendor), 200)]
+        [SwaggerResponse(200, "OK", Type = typeof(Vendor))]
         [AllowAnonymous]
         public ActionResult<Vendor> GetVendor(long id)
         {
@@ -73,7 +78,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="400">Невалидная модель для вендора.</response>
         /// <response code="409">Вендор уже существует.</response>
         [HttpPost("vendors")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         [Authorize(Roles = "admin")]
         [MapToApiVersion("2.0")]
         [SwaggerResponse(201, Type = typeof(Vendor), Description = "Вендор был добавлен")]
@@ -87,7 +92,7 @@ namespace Demo.WebApi.Controllers
             vendor.Id = GetLastId(Context.Vendors);
             Context.Vendors.Add(vendor);
             Context.SaveChanges();
-            return Created($"/api/vendors/{vendor.Id}", vendor);
+            return Created($"/api/v{RouteData.Values["version"]}/vendors/{vendor.Id}", vendor);
         }
 
         /// <summary>
@@ -100,7 +105,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="404">Вендор не найден.</response>
         /// <response code="409">Вендор уже существует.</response>
         [HttpPut("vendors")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         [Authorize(Roles = "admin")]
         [MapToApiVersion("2.0")]
         [SwaggerResponse(201, Type = typeof(Vendor), Description = "Вендор был добавлен")]
@@ -128,7 +133,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="404">Вендор не найден.</response>
         [HttpDelete("vendors/{id}")]
         [Authorize(Roles = "admin")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         [MapToApiVersion("2.0")]
         public ActionResult DeleteVendor(long id)
         {
@@ -153,7 +158,7 @@ namespace Demo.WebApi.Controllers
         /// <returns></returns>
         /// <response code="200">OK.</response>
         [HttpGet("products/all")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         [AllowAnonymous]
         public ActionResult<IEnumerable<Product>> GetProducts(string name = null, decimal minPrice = 0M, decimal maxPrice = 0M, 
             [Range(0, int.MaxValue)] int start = 0, [Range(0, int.MaxValue)] int count = 0)
@@ -186,7 +191,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="200">OK.</response>
         /// <response code="404">Товар не найден.</response>
         [HttpGet("products/{id}")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         [AllowAnonymous]
         public ActionResult<Product> GetProduct(long id)
         {
@@ -206,7 +211,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="409">Товар уже существует.</response>       
         [HttpPost("products")]
         [SwaggerResponse(201, Type = typeof(Product), Description = "Product was added")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         [Authorize(Roles = "admin")]
         public ActionResult AddProduct([FromBody]Product product)
         {
@@ -223,7 +228,7 @@ namespace Demo.WebApi.Controllers
 
             Context.Products.Add(product);
             Context.SaveChanges();
-            return Created($"api/products/{product.Id}", product);
+            return Created($"api/v{RouteData.Values["version"]}/products/{product.Id}", product);
         }
 
         /// <summary>
@@ -235,7 +240,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="404">Товар не найден.</response>
         [HttpDelete("products/{id}")]
         [Authorize(Roles = "admin")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         public ActionResult DeleteProduct(long id)
         {
             var product = Context.Products.FirstOrDefault(p => p.Id == id);
@@ -258,7 +263,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="404">Товар не найден.</response>
         /// <response code="409">Товар уже существует.</response> 
         [HttpPut("products/{id}")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         [Authorize(Roles = "admin")]
         public ActionResult UpdateProduct([FromBody]Product product)
         {
@@ -284,7 +289,7 @@ namespace Demo.WebApi.Controllers
         /// <response code="200">OK.</response>
         [HttpGet("products/{productId}/photo/all")]
         [AllowAnonymous]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]
+        [Produces("application/json")]
         public ActionResult<IEnumerable<Photo>> GetPhotos(long productId)
         {
             return Ok(Context.Photos.Where(p => p.ProductId == productId));
@@ -297,7 +302,7 @@ namespace Demo.WebApi.Controllers
         /// <returns></returns>
         /// <response code="200">OK.</response>
         /// <response code="404">Фото не найдено.</response>
-        [HttpGet("photo/{id}")]
+        [HttpGet("file/{id}")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]
         public ActionResult<Photo> GetPhoto(long id)
         {
@@ -311,25 +316,37 @@ namespace Demo.WebApi.Controllers
         /// <summary>
         /// Добавляет фото для товара.
         /// </summary>
-        /// <param name="photo">Новое фото.</param>
+        /// <param name="productId">Идентификатор товара.</param>
+        /// <param name="file">Новое фото.</param>
+        /// <param name="description"></param>
         /// <returns></returns>
         /// <response code="404">Товар не найден.</response>
-        [HttpPost("photo")]
-        [Authorize(Roles="admin")]
-        [SwaggerResponse(201, Type = typeof(Photo), Description = "Photo was uploaded.")]
-        [SwaggerResponseContentType("application/json", Exclusive = true)]       
-        public ActionResult AddPhoto([FromBody] Photo photo)
+        [HttpPost("products/{productId}/photo")]
+        //[Authorize(Roles="admin")]
+        [SwaggerResponse(201, Type = typeof(Photo), Description = "Photo was uploaded.")]       
+        [Produces("application/json")]
+        [Consumes("multipart/form-data")]
+        public ActionResult AddPhoto(long productId, string description, IFormFile file)
         {
-            var product = Context.Products.FirstOrDefault(p => p.Id == photo.ProductId);
+            var product = Context.Products.FirstOrDefault(p => p.Id == productId);
             if (product == null)
-                return NotFound($"Product with Id {photo.ProductId} not found.");
+                return NotFound($"Product with Id {productId} not found.");
 
-            photo.Id = GetLastId(Context.Photos);            
-            
-            Context.Photos.Add(photo);
-            Context.SaveChanges();
+            using (var stream = file.OpenReadStream())
+            using (var memoryReader = new MemoryStream())
+            {
+                stream.CopyTo(memoryReader);
+                var photo = new Photo
+                {
+                    Id = GetLastId(Context.Photos),
+                    Description = string.Empty,
+                    Extension = Path.GetExtension(file.FileName),
+                    ProductId = 10,
+                    Content = memoryReader.ToArray()
+                };
 
-            return Created($"api/photo/{photo.Id}", photo);
+                return Created($"api/v{RouteData.Values["version"]}/photo/{photo.Id}", photo);
+            }                       
         }
 
         /// <summary>
@@ -339,7 +356,7 @@ namespace Demo.WebApi.Controllers
         /// <returns></returns>
         /// <response code="200">Photo was deleted.</response>
         /// <response code="404">Not Found.</response>
-        [HttpDelete("photo/{id}")]
+        [HttpDelete("file/{id}")]
         [Authorize(Roles = "admin")]
         [SwaggerResponseContentType("application/json", Exclusive = true)]
         public ActionResult DeletePhoto(long id)
@@ -358,6 +375,6 @@ namespace Demo.WebApi.Controllers
         {
             var lastItem = dbSet.OrderByDescending(x => x.Id).FirstOrDefault();
             return lastItem == null ? 1 : lastItem.Id + 1;
-        }       
+        }        
     }
 }

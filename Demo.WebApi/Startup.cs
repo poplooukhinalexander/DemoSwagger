@@ -21,7 +21,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Demo.WebApi
 {
     using Filters;  
-    using Model;        
+    using Model;  
 
     /// <summary>
     /// Инициализация приложения.
@@ -62,9 +62,14 @@ namespace Demo.WebApi
                 c.OperationFilter<ResponseContentTypeOperationFilter>();
                 c.OperationFilter<AuthOperationFilter>();
                 c.OperationFilter<RemoveVersionParameterFilter>();
+                c.OperationFilter<OperationFile>();
                 c.DocumentFilter<UseVersionValueFilter>();
+                c.SchemaFilter<SchemaFilter>();                
 
-                c.DocInclusionPredicate((version, desc) =>
+                c.DescribeAllEnumsAsStrings();
+                c.DescribeStringEnumsInCamelCase();
+
+                c.DocInclusionPredicate((docName, desc) =>
                 {
                     if (!desc.TryGetMethodInfo(out MethodInfo methodInfo)) return false;
 
@@ -78,8 +83,8 @@ namespace Demo.WebApi
                         .SelectMany(map => map.Versions)
                         .ToArray();
 
-                    var res = versions.Any(v => $"v{v.ToString()}" == version) 
-                        && (maps.Length == 0 || maps.Any(v => $"v{v.ToString()}" == version));
+                    var res = versions.Any(v => $"v{v.ToString()}" == docName) 
+                        && (maps.Length == 0 || maps.Any(v => $"v{v.ToString()}" == docName));
                     return res;
                 });
             });
@@ -121,14 +126,24 @@ namespace Demo.WebApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            }          
-        
+            }
+            
+
+            //app.Use(async (ctx, next) =>
+            //{
+            //    if (ctx.Request.HttpContext.Request.Path.ToString().Contains("/swagger/") &&
+            //        ctx.Request.Host.Host == "localhost")               
+            //        await next();                    
+            //    else                    
+            //        ctx.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;           
+            //});
+
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1.0/swagger.json", "v1.0");
-                c.SwaggerEndpoint("/swagger/v2.0/swagger.json", "v2.0");
+                c.SwaggerEndpoint("/swagger/v2.0/swagger.json", "v2.0");                                   
             });
 
             app.UseAuthentication();

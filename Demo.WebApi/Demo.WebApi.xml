@@ -84,7 +84,7 @@
             <summary>
             Добавляет фото для товара.
             </summary>
-            <param name="photo">Новое фото.</param>
+            <param name="file">Новое фото.</param>
             <returns></returns>
         </member>
         <member name="M:Demo.WebApi.Controllers.CatalogController.DeletePhoto(System.Int64)">

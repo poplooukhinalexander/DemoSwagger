@@ -20,7 +20,7 @@ namespace Demo.WebApi.Model
                 Users.AddRange(new User[]
                 {
                     new User {Id = 10, Username = "dark_sidius", Password = "123", Role = "Default"},
-                    new User {Id = 11, Username = "r2d2", Password = "010101", Role = "Defaul"}
+                    new User {Id = 11, Username = "r2d2", Password = "010101", Role = "admin"}
                 });
                 SaveChanges();
             }

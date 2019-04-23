@@ -20,6 +20,12 @@ namespace Demo.WebApi.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Описание.
+        /// </summary>
+        [MaxLength(200)]
+        public string Description { get; set; }
+
+        /// <summary>
         /// Ссылка на лого.
         /// </summary>
         public string Logo { get; set; }
